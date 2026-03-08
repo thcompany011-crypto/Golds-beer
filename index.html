@@ -4,118 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golds-beer | Sistema</title>
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
     <style>
         :root { --gold: #d4af37; --dark: #121212; --card: #1e1e1e; }
         body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        /* Estilo para o campo de senha com olho */
-        .password-container { position: relative; width: 100%; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
-        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--gold); font-size: 0.8rem; font-weight: bold; }
-        
-        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .item-comanda { background: #252525; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--gold); }
-        .concluido { border-left-color: #4caf50; opacity: 0.5; }
+        .pass-wrapper { position: relative; width: 100%; margin: 10px 0; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; }
+        input:focus { border-color: var(--gold); }
+        .toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--gold); font-size: 0.7rem; background: none; border: none; font-weight: bold; }
+        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .hidden { display: none; }
+        #log-lista { text-align: left; margin-top: 20px; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .lista-itens { max-height: 250px; overflow-y: auto; margin-top: 10px; }
+        .item { padding: 8px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .item b { color: var(--gold); }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="container">
         <h2>GOLDS-BEER</h2>
-        <input type="text" id="user" placeholder="Usuário (atendentes ou geral)">
-        <div class="password-container">
+        <input type="text" id="user" placeholder="Usuário">
+        <div class="pass-wrapper">
             <input type="password" id="pass" placeholder="Senha">
-            <span class="toggle-password" onclick="togglePassword()">VER</span>
+            <button class="toggle-btn" onclick="togglePass()">VER</button>
         </div>
-        <button onclick="handleLogin()">ENTRAR</button>
+        <button onclick="verificarLogin()">ENTRAR NO SISTEMA</button>
     </div>
 
-    <div id="atendente-screen" class="container hidden">
-        <h2>LANÇAR COMANDA</h2>
-        <input type="number" id="numComanda" placeholder="4 últimos dígitos">
-        <button onclick="salvarComanda()">REGISTRAR AGORA</button>
-        <button onclick="logout()" style="background:transparent; color:gray; border:1px solid #333;">SAIR</button>
+    <div id="main-screen" class="container hidden">
+        <h2 id="welcome-msg">Painel</h2>
+        <input type="number" id="numComanda" placeholder="4 últimos dígitos" style="text-align: center; font-size: 1.2rem;">
+        <button onclick="registrarComanda()">REGISTRAR COMANDA</button>
+        
+        <div id="log-lista">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <small style="color: #666;">HISTÓRICO:</small>
+                <button onclick="limparHistorico()" style="width: auto; padding: 5px; font-size: 0.6rem; background: #444; color: #ccc; margin: 0;">LIMPAR</button>
+            </div>
+            <div id="itens" class="lista-itens"></div>
+        </div>
+        
+        <button onclick="location.reload()" style="background:transparent; color:gray; border:1px solid #333; margin-top:20px;">SAIR</button>
     </div>
-
-    <div id="admin-screen" class="container hidden" style="max-width: 500px;">
-        <h2>CONFERÊNCIA</h2>
-        <div id="lista-comandas" style="text-align: left; max-height: 400px; overflow-y: auto;"></div>
-        <button onclick="logout()" style="background:transparent; color:gray; border:1px solid #333; margin-top:20px;">SAIR</button>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <script>
-        // CONFIGURAÇÃO DO SEU PROJETO (IMPORTANTE: SUBSTITUA PELAS SUAS CHAVES DO FIREBASE)
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "ID",
-            appId: "APP_ID"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const ACESSOS = { "atendentes": "Goldsbeer", "geral": "Goldsbeer2026" };
 
-        // Função para mostrar/esconder senha
-        function togglePassword() {
-            const passInput = document.getElementById('pass');
-            const toggleBtn = document.querySelector('.toggle-password');
-            if (passInput.type === "password") {
-                passInput.type = "text";
-                toggleBtn.innerText = "OCULTAR";
-            } else {
-                passInput.type = "password";
-                toggleBtn.innerText = "VER";
+        function togglePass() {
+            const p = document.getElementById('pass');
+            const btn = document.querySelector('.toggle-btn');
+            p.type = p.type === "password" ? "text" : "password";
+            btn.innerText = p.type === "password" ? "VER" : "OCULTAR";
+        }
+
+        function verificarLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if (ACESSOS[u] && ACESSOS[u] === p) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-screen').classList.remove('hidden');
+                document.getElementById('welcome-msg').innerText = "Olá, " + u;
+                carregarDadosSalvos();
+            } else { alert("Usuário ou Senha incorretos!"); }
+        }
+
+        function registrarComanda() {
+            const n = document.getElementById('numComanda').value;
+            if(n.length < 4) return alert("Digite 4 números.");
+            const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            let historico = JSON.parse(localStorage.getItem('golds_history') || "[]");
+            historico.unshift({ numero: n, hora: hora });
+            localStorage.setItem('golds_history', JSON.stringify(historico));
+            document.getElementById('numComanda').value = "";
+            renderizarLista(historico);
+        }
+
+        function carregarDadosSalvos() {
+            renderizarLista(JSON.parse(localStorage.getItem('golds_history') || "[]"));
+        }
+
+        function renderizarLista(lista) {
+            document.getElementById('itens').innerHTML = lista.map(item => `
+                <div class="item"><span><b># ${item.numero}</b></span><span style="color:#666;">${item.hora}</span></div>
+            `).join('');
+        }
+
+        function limparHistorico() {
+            if(confirm("Apagar histórico?")) {
+                localStorage.removeItem('golds_history');
+                renderizarLista([]);
             }
         }
-
-        function handleLogin() {
-            const user = document.getElementById('user').value.toLowerCase();
-            const pass = document.getElementById('pass').value;
-            const email = user.includes('@') ? user : user + "@goldsbeer.com";
-
-            firebase.auth().signInWithEmailAndPassword(email, pass).then(res => {
-                document.getElementById('login-screen').classList.add('hidden');
-                if(user === "geral") {
-                    document.getElementById('admin-screen').classList.remove('hidden');
-                    carregarAdmin();
-                } else {
-                    document.getElementById('atendente-screen').classList.remove('hidden');
-                }
-            }).catch(() => alert("Acesso inválido!"));
-        }
-
-        function salvarComanda() {
-            const n = document.getElementById('numComanda').value;
-            if(n.length < 4) return alert("Digite 4 números!");
-            db.collection("comandas").add({ numero: n, status: "pendente", data: new Date() })
-            .then(() => { alert("Registrado!"); document.getElementById('numComanda').value = ""; });
-        }
-
-        function carregarAdmin() {
-            db.collection("comandas").orderBy("data", "desc").onSnapshot(snap => {
-                let h = "";
-                snap.forEach(doc => {
-                    const c = doc.data();
-                    const isPendente = c.status === "pendente";
-                    h += `<div class="item-comanda ${isPendente ? '' : 'concluido'}">
-                        <span><b># ${c.numero}</b><br><small>${c.data.toDate().toLocaleTimeString()}</small></span>
-                        ${isPendente ? `<button onclick="confirmar('${doc.id}')" style="width:auto; padding:5px 10px; margin:0;">OK</button>` : '<span>✔</span>'}
-                    </div>`;
-                });
-                document.getElementById('lista-comandas').innerHTML = h;
-            });
-        }
-
-        function confirmar(id) { db.collection("comandas").doc(id).update({ status: "concluido" }); }
-        function logout() { firebase.auth().signOut().then(() => location.reload()); }
     </script>
 </body>
 </html>
