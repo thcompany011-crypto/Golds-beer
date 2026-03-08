@@ -14,70 +14,82 @@
         :root { --gold: #d4af37; --dark: #121212; --card: #1e1e1e; }
         body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; margin-bottom: 10px; }
+        h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; font-size: 1.5rem; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; margin-bottom: 12px; }
         input:focus { border-color: var(--gold); }
-        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
         .hidden { display: none; }
         #log-lista { text-align: left; margin-top: 20px; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
         .lista-itens { max-height: 250px; overflow-y: auto; margin-top: 10px; }
-        .item { padding: 10px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        .item { padding: 10px 0; border-bottom: 1px solid #222; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .item-info { flex-grow: 1; }
         .item b { color: var(--gold); }
-        .item .pedido { display: block; color: #ccc; margin-top: 4px; font-style: italic; }
+        .item .pedido-texto { display: block; color: #bbb; margin-top: 4px; font-style: italic; }
+        #btn-limpar { width: auto; padding: 4px 8px; font-size: 0.6rem; background: #c0392b; color: #fff; margin: 0; }
+        input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--gold); cursor: pointer; margin: 0; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="container">
         <h2>GOLDS-BEER</h2>
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="pass" placeholder="Senha">
-        <button onclick="verificarLogin()">ENTRAR NO SISTEMA</button>
+        <input type="text" id="user" placeholder="USUÁRIO">
+        <input type="password" id="pass" placeholder="SENHA">
+        <button onclick="verificarLogin()">ENTRAR</button>
     </div>
 
     <div id="main-screen" class="container hidden">
-        <h2 id="welcome-msg">Painel</h2>
+        <h2 id="welcome-msg">PAINEL</h2>
         
-        <input type="number" id="numComanda" placeholder="4 últimos dígitos">
-        <input type="text" id="detalhePedido" placeholder="O que o cliente pediu?">
+        <input type="number" id="numComanda" placeholder="4 DÍGITOS DA COMANDA">
+        <input type="text" id="detalhePedido" placeholder="O QUE O CLIENTE PEDIU?">
         
         <button onclick="registrarComanda()">REGISTRAR PEDIDO</button>
         
         <div id="log-lista">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <small style="color: #666;">HISTÓRICO:</small>
-                <button onclick="limparHistorico()" style="width: auto; padding: 5px; font-size: 0.6rem; background: #444; color: #ccc; margin: 0;">LIMPAR</button>
+                <small style="color: #666; font-weight: bold;">HISTÓRICO:</small>
+                <button id="btn-limpar" class="hidden" onclick="limparHistorico()">LIMPAR TUDO</button>
             </div>
             <div id="itens" class="lista-itens"></div>
         </div>
         
-        <button onclick="location.reload()" style="background:transparent; color:gray; border:1px solid #333; margin-top:20px;">SAIR</button>
+        <button onclick="location.reload()" style="background:transparent; color:gray; border:1px solid #333; margin-top:15px; font-size: 0.8rem;">SAIR</button>
     </div>
 
     <script>
         const ACESSOS = { "atendentes": "Goldsbeer", "geral": "Goldsbeer2026" };
+        let usuarioLogado = "";
 
         function verificarLogin() {
-            const u = document.getElementById('user').value;
+            const u = document.getElementById('user').value.toLowerCase();
             const p = document.getElementById('pass').value;
+            
             if (ACESSOS[u] && ACESSOS[u] === p) {
+                usuarioLogado = u;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-screen').classList.remove('hidden');
-                document.getElementById('welcome-msg').innerText = "Olá, " + u;
+                document.getElementById('welcome-msg').innerText = "OLÁ, " + u.toUpperCase();
+                
+                if(u === "geral") {
+                    document.getElementById('btn-limpar').classList.remove('hidden');
+                }
+                
                 carregarDadosSalvos();
-            } else { alert("Acesso Inválido!"); }
+            } else { alert("ACESSO INVÁLIDO!"); }
         }
 
         function registrarComanda() {
             const n = document.getElementById('numComanda').value;
             const d = document.getElementById('detalhePedido').value;
             
-            if(n.length < 4 || d === "") return alert("Preencha a comanda (4 dígitos) e o pedido!");
+            if(n.length < 1 || d === "") return alert("PREENCHA OS CAMPOS!");
             
+            const id = Date.now(); // ID único para cada pedido
             const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             let historico = JSON.parse(localStorage.getItem('golds_history') || "[]");
             
-            historico.unshift({ numero: n, pedido: d, hora: hora });
+            historico.unshift({ id: id, numero: n, pedido: d, hora: hora, aprovado: false });
             localStorage.setItem('golds_history', JSON.stringify(historico));
             
             document.getElementById('numComanda').value = "";
@@ -89,17 +101,31 @@
             renderizarLista(JSON.parse(localStorage.getItem('golds_history') || "[]"));
         }
 
+        function toggleAprovacao(id) {
+            let historico = JSON.parse(localStorage.getItem('golds_history') || "[]");
+            historico = historico.map(item => {
+                if(item.id === id) item.aprovado = !item.aprovado;
+                return item;
+            });
+            localStorage.setItem('golds_history', JSON.stringify(historico));
+        }
+
         function renderizarLista(lista) {
+            const isGeral = usuarioLogado === "geral";
             document.getElementById('itens').innerHTML = lista.map(item => `
                 <div class="item">
-                    <span><b># ${item.numero}</b> - ${item.hora}</span>
-                    <span class="pedido">${item.pedido}</span>
+                    ${isGeral ? `<input type="checkbox" ${item.aprovado ? 'checked' : ''} onclick="toggleAprovacao(${item.id})">` : ''}
+                    <div class="item-info">
+                        <span><b># ${item.numero}</b> - ${item.hora}</span>
+                        <span class="pedido-texto">${item.pedido}</span>
+                    </div>
                 </div>
             `).join('');
         }
 
         function limparHistorico() {
-            if(confirm("Apagar histórico local?")) {
+            if(usuarioLogado !== "geral") return;
+            if(confirm("CONFIRMA A EXCLUSÃO DE TODO O HISTÓRICO?")) {
                 localStorage.removeItem('golds_history');
                 renderizarLista([]);
             }
