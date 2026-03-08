@@ -3,100 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Comandas Premium</title>
+    <title>Golds-beer | Sistema</title>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --accent-color: #d4af37; /* Bronze/Dourado */
-            --text-color: #ffffff;
-            --border-color: #333;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 400px;
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        h2 { text-align: center; color: var(--accent-color); margin-bottom: 1.5rem; }
-
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: #2a2a2a;
-            color: white;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: var(--accent-color);
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            transition: 0.3s;
-        }
-
-        button:hover { opacity: 0.8; }
-
+        :root { --gold: #d4af37; --dark: #121212; --card: #1e1e1e; }
+        body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .item-comanda { background: #252525; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--gold); }
+        .concluido { border-left-color: #4caf50; opacity: 0.5; }
         .hidden { display: none; }
-        
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-        .open { background: #d4af37; color: #000; }
-        .closed { background: #4caf50; color: #fff; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="login-container">
-        <h2>Acesso Restrito</h2>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="password" placeholder="Senha">
-        <button onclick="handleLogin()">Entrar</button>
+    <div id="login-screen" class="container">
+        <h2>GOLDS-BEER</h2>
+        <input type="text" id="user" placeholder="Usuário (atendentes ou geral)">
+        <input type="password" id="pass" placeholder="Senha">
+        <button onclick="handleLogin()">ENTRAR</button>
     </div>
 
-    <div class="container hidden" id="atendente-panel">
-        <h2>Nova Comanda</h2>
-        <input type="number" id="comanda-num" placeholder="Últimos 4 números" maxlength="4">
-        <input type="file" id="comanda-foto" accept="image/*" capture="camera">
-        <button onclick="saveComanda()">Registrar Entrada</button>
-        <button style="background: transparent; color: #999; border: 1px solid #333;" onclick="logout()">Sair</button>
+    <div id="atendente-screen" class="container hidden">
+        <h2>LANÇAR COMANDA</h2>
+        <input type="number" id="numComanda" placeholder="4 últimos dígitos">
+        <button onclick="salvarComanda()">REGISTRAR AGORA</button>
+        <button onclick="logout()" style="background:transparent; color:gray; border:1px solid #333;">SAIR</button>
     </div>
 
-    <div class="container hidden" id="admin-panel">
-        <h2>Controle de Comandas</h2>
-        <div id="lista-comandas">
-            </div>
-        <button style="margin-top:20px; background: transparent; color: #999; border: 1px solid #333;" onclick="logout()">Sair</button>
+    <div id="admin-screen" class="container hidden" style="max-width: 500px;">
+        <h2>CONFERÊNCIA</h2>
+        <div id="lista-comandas" style="text-align: left; max-height: 400px; overflow-y: auto;"></div>
+        <button onclick="logout()" style="background:transparent; color:gray; border:1px solid #333; margin-top:20px;">SAIR</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <script>
+        // CONFIGURAÇÃO DO SEU PROJETO (COLE AQUI O QUE PEGAR NO FIREBASE)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "ID",
+            appId: "APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function handleLogin() {
+            const user = document.getElementById('user').value.toLowerCase();
+            const pass = document.getElementById('pass').value;
+            const email = user.includes('@') ? user : user + "@goldsbeer.com";
+
+            firebase.auth().signInWithEmailAndPassword(email, pass).then(res => {
+                document.getElementById('login-screen').classList.add('hidden');
+                if(user === "geral") {
+                    document.getElementById('admin-screen').classList.remove('hidden');
+                    carregarAdmin();
+                } else {
+                    document.getElementById('atendente-screen').classList.remove('hidden');
+                }
+            }).catch(() => alert("Acesso inválido!"));
+        }
+
+        function salvarComanda() {
+            const n = document.getElementById('numComanda').value;
+            if(n.length < 4) return alert("Digite 4 números!");
+            db.collection("comandas").add({ numero: n, status: "pendente", data: new Date() })
+            .then(() => { alert("Registrado!"); document.getElementById('numComanda').value = ""; });
+        }
+
+        function carregarAdmin() {
+            db.collection("comandas").orderBy("data", "desc").onSnapshot(snap => {
+                let h = "";
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    const isPendente = c.status === "pendente";
+                    h += `<div class="item-comanda ${isPendente ? '' : 'concluido'}">
+                        <span><b># ${c.numero}</b><br><small>${c.data.toDate().toLocaleTimeString()}</small></span>
+                        ${isPendente ? `<button onclick="confirmar('${doc.id}')" style="width:auto; padding:5px 10px; margin:0;">OK</button>` : '<span>✔</span>'}
+                    </div>`;
+                });
+                document.getElementById('lista-comandas').innerHTML = h;
+            });
+        }
+
+        function confirmar(id) { db.collection("comandas").doc(id).update({ status: "concluido" }); }
+        function logout() { firebase.auth().signOut().then(() => location.reload()); }
+    </script>
 </body>
 </html>
-
