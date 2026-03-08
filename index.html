@@ -15,16 +15,15 @@
         body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        .pass-wrapper { position: relative; width: 100%; margin: 10px 0; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; margin-bottom: 10px; }
         input:focus { border-color: var(--gold); }
-        .toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--gold); font-size: 0.7rem; background: none; border: none; font-weight: bold; }
         button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .hidden { display: none; }
         #log-lista { text-align: left; margin-top: 20px; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
         .lista-itens { max-height: 250px; overflow-y: auto; margin-top: 10px; }
-        .item { padding: 8px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .item { padding: 10px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
         .item b { color: var(--gold); }
+        .item .pedido { display: block; color: #ccc; margin-top: 4px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -32,17 +31,17 @@
     <div id="login-screen" class="container">
         <h2>GOLDS-BEER</h2>
         <input type="text" id="user" placeholder="Usuário">
-        <div class="pass-wrapper">
-            <input type="password" id="pass" placeholder="Senha">
-            <button class="toggle-btn" onclick="togglePass()">VER</button>
-        </div>
+        <input type="password" id="pass" placeholder="Senha">
         <button onclick="verificarLogin()">ENTRAR NO SISTEMA</button>
     </div>
 
     <div id="main-screen" class="container hidden">
         <h2 id="welcome-msg">Painel</h2>
-        <input type="number" id="numComanda" placeholder="4 últimos dígitos" style="text-align: center; font-size: 1.2rem;">
-        <button onclick="registrarComanda()">REGISTRAR COMANDA</button>
+        
+        <input type="number" id="numComanda" placeholder="4 últimos dígitos">
+        <input type="text" id="detalhePedido" placeholder="O que o cliente pediu?">
+        
+        <button onclick="registrarComanda()">REGISTRAR PEDIDO</button>
         
         <div id="log-lista">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -58,13 +57,6 @@
     <script>
         const ACESSOS = { "atendentes": "Goldsbeer", "geral": "Goldsbeer2026" };
 
-        function togglePass() {
-            const p = document.getElementById('pass');
-            const btn = document.querySelector('.toggle-btn');
-            p.type = p.type === "password" ? "text" : "password";
-            btn.innerText = p.type === "password" ? "VER" : "OCULTAR";
-        }
-
         function verificarLogin() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
@@ -73,17 +65,23 @@
                 document.getElementById('main-screen').classList.remove('hidden');
                 document.getElementById('welcome-msg').innerText = "Olá, " + u;
                 carregarDadosSalvos();
-            } else { alert("Usuário ou Senha incorretos!"); }
+            } else { alert("Acesso Inválido!"); }
         }
 
         function registrarComanda() {
             const n = document.getElementById('numComanda').value;
-            if(n.length < 4) return alert("Digite 4 números.");
+            const d = document.getElementById('detalhePedido').value;
+            
+            if(n.length < 4 || d === "") return alert("Preencha a comanda (4 dígitos) e o pedido!");
+            
             const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             let historico = JSON.parse(localStorage.getItem('golds_history') || "[]");
-            historico.unshift({ numero: n, hora: hora });
+            
+            historico.unshift({ numero: n, pedido: d, hora: hora });
             localStorage.setItem('golds_history', JSON.stringify(historico));
+            
             document.getElementById('numComanda').value = "";
+            document.getElementById('detalhePedido').value = "";
             renderizarLista(historico);
         }
 
@@ -93,12 +91,15 @@
 
         function renderizarLista(lista) {
             document.getElementById('itens').innerHTML = lista.map(item => `
-                <div class="item"><span><b># ${item.numero}</b></span><span style="color:#666;">${item.hora}</span></div>
+                <div class="item">
+                    <span><b># ${item.numero}</b> - ${item.hora}</span>
+                    <span class="pedido">${item.pedido}</span>
+                </div>
             `).join('');
         }
 
         function limparHistorico() {
-            if(confirm("Apagar histórico?")) {
+            if(confirm("Apagar histórico local?")) {
                 localStorage.removeItem('golds_history');
                 renderizarLista([]);
             }
