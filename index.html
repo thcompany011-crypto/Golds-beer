@@ -12,8 +12,7 @@
         .input-group { position: relative; width: 100%; margin-bottom: 12px; }
         input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; }
         input:focus { border-color: var(--gold); }
-        /* ESTILO DO BOTÃO MOSTRAR SENHA */
-        .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--gold); cursor: pointer; font-size: 0.75rem; font-weight: bold; z-index: 10; background: #2a2a2a; padding-left: 5px; }
+        .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--gold); cursor: pointer; font-size: 0.75rem; font-weight: bold; z-index: 10; background: #2a2a2a; padding: 5px; border-radius: 4px; }
         button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
         .hidden { display: none; }
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
@@ -46,16 +45,19 @@
 
     <div id="main-screen" class="container hidden">
         <h2 id="welcome-msg">PAINEL</h2>
+        
         <div id="area-registro">
             <input type="number" id="numComanda" placeholder="Nº COMANDA">
             <input type="text" id="detalhePedido" list="sugestoes" placeholder="PEDIDO (EX: BRAHMA 600)">
             <datalist id="sugestoes"></datalist>
             <button id="btn-registrar" onclick="registrarComanda()">REGISTRAR</button>
         </div>
+
         <div id="area-abas" class="tabs hidden">
             <button class="tab-btn active" id="tab-pend" onclick="abaAtual='pendentes'; renderizarLista(cachePedidos)">PENDENTES</button>
             <button class="tab-btn" id="tab-incl" onclick="abaAtual='incluidos'; renderizarLista(cachePedidos)">INCLUÍDOS</button>
         </div>
+        
         <div id="log-lista">
             <span id="status-carga" class="loading hidden">Sincronizando...</span>
             <div id="itens" class="lista-itens">Carregando...</div>
@@ -83,7 +85,6 @@
             carregarSugestoes();
         };
 
-        // FUNÇÃO PARA MOSTRAR/OCULTAR SENHA
         function togglePassword() {
             const campo = document.getElementById('pass');
             const btn = document.querySelector('.toggle-pass');
@@ -97,8 +98,8 @@
         }
 
         function verificarLogin() {
-            const u = document.getElementById('user').value.toLowerCase();
-            const p = document.getElementById('pass').value;
+            const u = document.getElementById('user').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value.trim();
             if (ACESSOS[u] === p) {
                 usuarioLogado = u;
                 localStorage.setItem('gb_user', u);
@@ -108,13 +109,16 @@
                     localStorage.setItem('gb_nome', nomeAtendente);
                 }
                 iniciarPainel();
-            } else { alert("ACESSO NEGADO!"); }
+            } else { alert("Acesso Inválido!"); }
         }
 
         function iniciarPainel() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
+            
+            // Lógica para mudar o texto para CAIXA
             document.getElementById('welcome-msg').innerText = (usuarioLogado === "geral" ? "OLÁ, CAIXA" : "OLÁ, " + nomeAtendente.toUpperCase());
+            
             if(usuarioLogado === "geral") {
                 document.getElementById('area-registro').classList.add('hidden');
                 document.getElementById('area-abas').classList.remove('hidden');
