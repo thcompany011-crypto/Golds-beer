@@ -5,48 +5,256 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golds-beer | Gestão Rápida</title>
     <style>
-        :root { --gold: #d4af37; --dark: #121212; --card: #1e1e1e; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
-        .container { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #333; text-align: center; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: var(--gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; font-size: 1.3rem; }
-        .input-group { position: relative; width: 100%; margin-bottom: 12px; }
-        input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; font-size: 1rem; }
-        input:focus { border-color: var(--gold); }
-        .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--gold); cursor: pointer; font-size: 0.75rem; font-weight: bold; background: #2a2a2a; padding: 5px; border-radius: 4px; }
-        button { width: 100%; padding: 14px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; transition: 0.3s; }
-        button:active { transform: scale(0.98); background: #b8962d; }
-        .hidden { display: none; }
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { background: #333; color: #888; padding: 10px; font-size: 0.75rem; flex: 1; border-radius: 5px; border: 1px solid #444; font-weight: bold; cursor: pointer; }
-        .tab-btn.active { background: var(--gold); color: black; }
-        #log-lista { text-align: left; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-top: 15px; }
-        .lista-itens { max-height: 420px; overflow-y: auto; }
-        .item { padding: 12px 0; border-bottom: 1px solid #222; display: flex; align-items: flex-start; gap: 12px; }
-        .item-info { flex-grow: 1; }
-        .item b { color: var(--gold); font-size: 1.1rem; }
-        .detalhes { display: block; color: #ccc; margin-top: 4px; font-size: 0.9rem; font-weight: 500; }
-        .atendente-tag { font-size: 0.75rem; color: #777; display: block; margin-top: 3px; font-style: italic; }
-        .confirmado-tag { font-size: 0.75rem; color: #97d997; display: block; margin-top: 3px; font-style: italic; }
-        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: bold; margin-left: 8px; text-transform: uppercase; }
-        .status-aberto { background: #6a5200; color: #fff1b0; }
-        .status-confirmado { background: #165c16; color: #b9ffb9; }
-        .loading { color: var(--gold); font-size: 0.8rem; display: block; text-align: center; margin-bottom: 10px; }
-        .preview-img, .item-img { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #333; object-fit: cover; max-height: 220px; }
-        .logout-btn { background: transparent; color: gray; border: 1px solid #333; margin-top: 20px; font-size: 0.75rem; }
-        .small-tip { color: #888; font-size: 0.78rem; text-align: left; margin-top: -4px; margin-bottom: 10px; }
+        :root {
+            --gold: #d4af37;
+            --dark: #121212;
+            --card: #1e1e1e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.3rem;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--gold);
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #2a2a2a;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--gold);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            background: #b8962d;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: #333;
+            color: #888;
+            padding: 10px;
+            font-size: 0.75rem;
+            flex: 1;
+            border-radius: 5px;
+            border: 1px solid #444;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--gold);
+            color: black;
+        }
+
+        #log-lista {
+            text-align: left;
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+
+        .lista-itens {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .item {
+            padding: 12px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item b {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        .detalhes {
+            display: block;
+            color: #ccc;
+            margin-top: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .atendente-tag {
+            font-size: 0.75rem;
+            color: #777;
+            display: block;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .confirmado-tag {
+            font-size: 0.75rem;
+            color: #98db98;
+            display: block;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .loading {
+            color: var(--gold);
+            font-size: 0.8rem;
+            display: block;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-aberto {
+            background: #6a5200;
+            color: #fff1b0;
+        }
+
+        .status-confirmado {
+            background: #165c16;
+            color: #b9ffb9;
+        }
+
+        .preview-img,
+        .item-img {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #333;
+            object-fit: cover;
+            max-height: 220px;
+        }
+
+        .small-tip {
+            color: #888;
+            font-size: 0.78rem;
+            text-align: left;
+            margin-top: -4px;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: gray;
+            border: 1px solid #333;
+            margin-top: 20px;
+            font-size: 0.75rem;
+        }
+
+        .pedido-box {
+            margin-top: 6px;
+            color: #f0f0f0;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="container">
         <h2>GOLDS-BEER</h2>
+
         <div class="input-group">
             <input type="text" id="user" placeholder="USUÁRIO">
         </div>
+
         <div class="input-group">
             <input type="password" id="pass" placeholder="SENHA">
             <span class="toggle-pass" onclick="togglePassword()">VER</span>
         </div>
+
         <button onclick="verificarLogin()">ENTRAR</button>
     </div>
 
@@ -58,6 +266,10 @@
             <div class="small-tip">O sistema salva apenas os 4 últimos números.</div>
 
             <input type="text" id="ultimos4" placeholder="ÚLTIMOS 4 NÚMEROS" readonly>
+
+            <div style="margin-top:10px;">
+                <input type="text" id="pedido" placeholder="PEDIDO (EX: BRAHMA 600)">
+            </div>
 
             <div style="margin-top:10px;">
                 <input type="file" id="fotoComanda" accept="image/*" capture="environment" onchange="carregarFoto(event)">
@@ -183,9 +395,15 @@
         async function registrarComanda() {
             const numeroCompleto = document.getElementById('numComanda').value.replace(/\D/g, '');
             const ultimos4 = numeroCompleto.slice(-4);
+            const pedido = document.getElementById('pedido').value.trim();
 
             if (!numeroCompleto || ultimos4.length < 4) {
                 alert("Digite a comanda. É preciso ter pelo menos 4 números.");
+                return;
+            }
+
+            if (!pedido) {
+                alert("Digite o pedido do cliente.");
                 return;
             }
 
@@ -197,7 +415,7 @@
                 action: 'add',
                 id: Date.now().toString(),
                 numero: numeroCompleto,
-                comanda: ultimos4,
+                pedido: pedido,
                 foto: fotoBase64 || "",
                 atendente: nomeAtendente
             };
@@ -210,6 +428,7 @@
 
                 document.getElementById('numComanda').value = "";
                 document.getElementById('ultimos4').value = "";
+                document.getElementById('pedido').value = "";
                 document.getElementById('fotoComanda').value = "";
                 document.getElementById('previewFoto').src = "";
                 document.getElementById('previewFoto').classList.add('hidden');
@@ -230,7 +449,6 @@
             try {
                 const r = await fetch(SCRIPT_URL);
                 const dados = await r.json();
-
                 cachePedidos = Array.isArray(dados) ? dados : [];
                 renderizarLista(cachePedidos);
             } catch (e) {
@@ -263,7 +481,6 @@
 
         function obterStatus(item) {
             if (item.status) return String(item.status).toLowerCase();
-            if (item.aprovado === true) return "confirmado";
             return "aberto";
         }
 
@@ -274,11 +491,15 @@
         }
 
         function obterDataHora(item) {
-            return item.data || item.hora || "--:--";
+            return item.data || "--:--";
         }
 
         function obterConfirmadoPor(item) {
-            return item.confirmado || item.confirmadoPor || "";
+            return item.confirmado || "";
+        }
+
+        function obterPedido(item) {
+            return item.pedido || "";
         }
 
         function renderizarLista(lista) {
@@ -289,7 +510,8 @@
                 _status: obterStatus(item),
                 _numero: obterNumero(item),
                 _dataHora: obterDataHora(item),
-                _confirmadoPor: obterConfirmadoPor(item)
+                _confirmadoPor: obterConfirmadoPor(item),
+                _pedido: obterPedido(item)
             }));
 
             if (tipoUsuario === "conferencia") {
@@ -308,7 +530,7 @@
 
             box.innerHTML = filtrados.reverse().map(p => `
                 <div class="item">
-                    <div class="item-info">
+                    <div>
                         <span>
                             <b># ${p._numero}</b>
                             <span class="status-badge ${p._status === 'confirmado' ? 'status-confirmado' : 'status-aberto'}">
@@ -318,6 +540,8 @@
 
                         <span class="detalhes">Data/Hora: ${p._dataHora}</span>
                         <span class="atendente-tag">Por: ${p.atendente || '---'}</span>
+
+                        ${p._pedido ? `<div class="pedido-box"><strong>Pedido:</strong> ${p._pedido}</div>` : ''}
 
                         ${p._confirmadoPor ? `<span class="confirmado-tag">Confirmado por: ${p._confirmadoPor}</span>` : ''}
 
